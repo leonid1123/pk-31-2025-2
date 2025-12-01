@@ -1,0 +1,15 @@
+QLabel {
+    font-size: 24px;
+}
+QLineEdit {
+    font-size: 24px;
+}
+QPushButton {
+    font-size: 24px;
+}
+QListWidget {
+    font-size: 24px;
+}
+QComboBox {
+    font-size: 24px;
+}
