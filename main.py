@@ -1,5 +1,6 @@
 '''
 RPG - магазин и инвентарь
+репозитарий: https://github.com/leonid1123/pk-31-2025-2
 '''
 import sys
 from pathlib import Path
@@ -10,8 +11,9 @@ import pymysql.cursors
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.items_id_lst = []
-        self.showMaximized()
+        self.items_id_lst = []#id всех вещей
+        self.inventory_items_id = []#id вещей в инвентаре
+        self.shop_items_id = []#id вещей в магазине
         self.setWindowTitle("САМАЯ ЛУЧШАЯ РОЛЁВКА")
         layout = QGridLayout()
         self.setLayout(layout)
@@ -39,6 +41,7 @@ class MainWindow(QWidget):
         layout.addWidget(self.all_items_lst,1,1)
         self.get_shop()
         self.get_all_items()
+        self.show_inventory()
         self.show()
 
     def db_connect(self):
@@ -89,7 +92,7 @@ class MainWindow(QWidget):
     def show_inventory(self):
         self.inventory_lst.clear()
         sql = '''SELECT `Вещи`.`название`, `Вещи`.`цена`, `Вещи`.`редкость`,
-        `Инвентарь`.`количество`
+        `Инвентарь`.`количество`, `Инвентарь`.`id`
         FROM `Инвентарь`
         INNER JOIN `Вещи`
         ON `Инвентарь`.`Id_вещи` = `Вещи`.`id`;'''
@@ -97,15 +100,33 @@ class MainWindow(QWidget):
         ans = self.cursor.fetchone()
         while ans:
             self.inventory_lst.addItem(f'{ans[0]} {ans[1]} {ans[2]} {ans[3]}')
+            self.inventory_items_id.append(ans[4])
             ans = self.cursor.fetchone()
 
     def sel_item(self):
         if self.inventory_lst.currentIndex() is not None:
             print('можно продать')
+            #найти как убрать выделение
+            selected_item = self.inventory_lst.currentRow()
+            print(selected_item)
+            selected_id = self.inventory_items_id[selected_item]#id выбранной записи в инвентаре
+            sql = "SELECT `id_вещи` FROM `Инвентарь`"
+            self.cursor.execute(sql)
+            ans = self.cursor.fetchone()#id выбранной вещи
+            sql = 'DELETE FROM `Инвентарь` WHERE id=%s'
+            self.cursor.execute(sql,(selected_id,))
+            self.connection.commit()
+            sql = "INSERT INTO `Магазин`(`id_вещи`,`количество`) VALUES(%s, 1)"
+            self.cursor.execute(sql,(ans[0],))
+            self.get_shop()
+            self.show_inventory()
+
+
 
     def buy_item(self):
         if self.shop_lst.currentIndex() is not None:
             print("можно купить")
+            #найти как убрать выделение
 
 
 if __name__ == '__main__':
