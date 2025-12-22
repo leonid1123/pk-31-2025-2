@@ -91,6 +91,7 @@ class MainWindow(QWidget):
 
     def show_inventory(self):
         self.inventory_lst.clear()
+        self.inventory_items_id.clear()
         sql = '''SELECT `Вещи`.`название`, `Вещи`.`цена`, `Вещи`.`редкость`,
         `Инвентарь`.`количество`, `Инвентарь`.`id`
         FROM `Инвентарь`
@@ -105,20 +106,17 @@ class MainWindow(QWidget):
 
     def sel_item(self):
         if self.inventory_lst.currentIndex() is not None:
-            print('можно продать')
-            #найти как убрать выделение
-            selected_item = self.inventory_lst.currentRow()
-            print(selected_item)
-            selected_id = self.inventory_items_id[selected_item]#id выбранной записи в инвентаре
-            sql = "SELECT `id_вещи` FROM `Инвентарь`"
-            self.cursor.execute(sql)
-            ans = self.cursor.fetchone()#id выбранной вещи
-            sql = 'DELETE FROM `Инвентарь` WHERE id=%s'
-            self.cursor.execute(sql,(selected_id,))
+            num: int = self.inventory_lst.currentRow()
+            id = self.inventory_items_id[num]
+            sql = "SELECT `id_вещи` FROM `инвентарь` WHERE id=%s"
+            self.cursor.execute(sql,(id,))
+            ans = self.cursor.fetchone()
+            id_veshi = ans[0]
+            print(id_veshi)
+            
+            sql = "DELETE FROM `инвентарь` WHERE id=%s"
+            self.cursor.execute(sql,(id,))
             self.connection.commit()
-            sql = "INSERT INTO `Магазин`(`id_вещи`,`количество`) VALUES(%s, 1)"
-            self.cursor.execute(sql,(ans[0],))
-            self.get_shop()
             self.show_inventory()
 
 
